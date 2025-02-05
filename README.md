@@ -34,6 +34,7 @@ Then install the python libraries required by our code using the following comma
 conda env update --file condaenv.yml
 pip install -r requirements.txt
 ```
+Finally, download the target dataset in a "data" folder. For the object detection demo, download coco2017 in a "data/COCO" folder.
 
 ### Minimal example for image classification:
 This script runs a classification example of the model LeNet-5 on the MNIST dataset, injecting one neuron fault per image:

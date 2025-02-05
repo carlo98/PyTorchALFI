@@ -793,14 +793,20 @@ class Save_nan_inf:
             output_inf_flags = module_out.isinf()
             dims = len(output_nan_flags.shape)
             shape = output_nan_flags.shape
+            print(shape)
             if shape[0]>shape[1]:
-                if len(shape) > 3:
+                if len(shape) == 4:
                     output_inf_flags_reshape = output_inf_flags.permute(1, 0, 2, 3)
                     output_nan_flags_reshape = output_nan_flags.permute(1, 0, 2, 3)
+                elif len(shape) == 3:
+                    output_inf_flags_reshape = output_inf_flags.permute(1, 0, 2)
+                    output_nan_flags_reshape = output_nan_flags.permute(1, 0, 2)
                 elif len(shape) == 2:
                     output_inf_flags_reshape = output_inf_flags.permute(1, 0)
                     output_nan_flags_reshape = output_nan_flags.permute(1, 0)
                 else:
+                    import pdb
+                    pdb.set_trace()
                     print("Error, TODO check")
                 monitors = [(torch.sum(output_nan_flags_reshape, dim=tuple(range(1,dims))) > 0).cpu().numpy(), (torch.sum(output_inf_flags_reshape, dim=tuple(range(1,dims))) > 0).cpu().numpy()]
             else:    

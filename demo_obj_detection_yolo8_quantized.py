@@ -4,8 +4,8 @@ import torch
 import torchvision
 import argparse
 from pathlib import Path
+from ultralytics import YOLO
 
-import torch
 FILE = Path(__file__).resolve()
 
 from alficore.wrapper.test_error_models_objdet import TestErrorModels_ObjDet
@@ -36,7 +36,7 @@ class  build_objdet_native_model(build_native_model):
     def __init__(self, model, device):
         super().__init__(model=model, device=device)
         ### img_size, preprocess and postprocess can also be inialised using kwargs which will be set in base class
-        self.img_size = 416
+        self.img_size = 640
         self.preprocess = True
         self.postprocess = True
 
@@ -179,11 +179,21 @@ class  build_objdet_native_model(build_native_model):
 
         # Settings
         min_wh, max_wh = 2, 4096  # (pixels) minimum and maximum box width and height
-        max_nms = 30000  # maximum number of boxes into torchvision.ops.nms()
+        max_nms = 8  # maximum number of boxes into torchvision.ops.nms()
         time_limit = 10.0  # seconds to quit after
         redundant = True  # require redundant detections
         merge = False  # use merge-NMS
         out_prediction = [None]*len(prediction)
+        
+        # Transform uolo8n results ultralytics to code of PyTorchALFI: from tuple to dict, from x,y,w,h to x1, y1, x2, y2
+        prediction_alfi = []
+        for res in prediction:
+            prediction_alfi.append({"scores": res[4:, :].max(axis=0).values, "labels": res[:4, :].argmax(axis=0), "boxes": res[:4, :].transpose(1, 0)})
+            prediction_alfi[-1]["boxes"][:, 2] = prediction_alfi[-1]["boxes"][:, 0] + prediction_alfi[-1]["boxes"][:, 2]
+            prediction_alfi[-1]["boxes"][:, 3] = prediction_alfi[-1]["boxes"][:, 1] + prediction_alfi[-1]["boxes"][:, 3]
+        
+        prediction = prediction_alfi
+
         for xi, x in enumerate(prediction):  # image index, image inference
             # Apply constraints
             # x[((x[..., 2:4] < min_wh) | (x[..., 2:4] > max_wh)).any(1), 4] = 0  # width-height
@@ -191,8 +201,7 @@ class  build_objdet_native_model(build_native_model):
             indx = np.where(xc.cpu())[0]
             x['scores'] = x['scores'][xc]
             x['labels'] = x['labels'][xc]
-            if x["boxes"].shape[0] > 0:
-                x['boxes'] = x['boxes'][xc, :]
+            x['boxes'] = x['boxes'][xc, :]
 
             # If none remain process next image
             if not len(x['scores']):
@@ -203,7 +212,7 @@ class  build_objdet_native_model(build_native_model):
                 continue
             elif n > max_nms:  # excess boxes
                 filterd = x['scores'].argsort(descending=True)[:max_nms]
-                x = x[x['scores'].argsort(descending=True)[:max_nms]]  # sort by confidence
+                # sort by confidence
                 x['scores'] = x['scores'][filterd]
                 x['labels'] = x['labels'][filterd]
                 x['boxes'] = x['boxes'][filterd]
@@ -261,6 +270,7 @@ class  build_objdet_native_model(build_native_model):
         if self.preprocess:
             _input = self.preprocess_input(input)
         output = self.model(_input)
+        output = output[0]  # necessary for yolo8n
         if self.postprocess:
             output = self.postprocess_output(output, input, original_shapes, _input.shape[2:])
 
@@ -278,6 +288,11 @@ def main(argv):
     frcnn_model.eval()
     # model = build_objdet_native_model(model=frcnn_model)
     model = frcnn_model
+
+    model = YOLO('../yolov8n.pt').model
+    model.load_state_dict(torch.load('../yolov8_quantized.pth')) #load the pretrained weights
+    model = model.to(device)
+    model.eval()
 
     ## set dataloader attributes
     dl_attr = TEM_Dataloader_attr()
@@ -304,7 +319,7 @@ def parse_opt():
     parser.add_argument('--dl-json', type=str, default='data/COCO/annotations_trainval2017/instances_val2017.json', help='path to datasets ground truth json file')
     parser.add_argument('--dl-img-root', type=str, default='data/COCO/val2017', help='path to datasets images')
     parser.add_argument('--dl-ds-name', type=str, default='CoCo', help='dataset short name')
-    parser.add_argument('--config-file', type=str, default='default_lenet.yml', help='name of default yml file - inside scenarios folder')
+    parser.add_argument('--config-file', type=str, default='default_8quantized.yml', help='name of default yml file - inside scenarios folder')
     parser.add_argument('--fault-files', type=str, default=None, help='directory of already existing fault files to repeat existing experiment')
     parser.add_argument('--dl-batchsize', type=int, default=10, help='dataloader batch size')
     parser.add_argument('--sample-size', type=int, default=100, help='dataloader sample size')

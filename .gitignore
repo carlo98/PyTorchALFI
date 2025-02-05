@@ -21,7 +21,7 @@ nohup.out
 sample.egg-info/
 resiliency_analysis.ipynb
 *.mp4
-# plots*
+plots*
 baseline*/
 yolov3_*/
 license-header.txt
