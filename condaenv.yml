@@ -4,10 +4,10 @@ channels:
   - nvidia
   - anaconda
   - conda-forge
-  - intel
   - menpo
   - defaults
 dependencies:
+  - pip
   - _libgcc_mutex=0.1=main
   - _openmp_mutex=5.1=1_gnu
   - _sysroot_linux-64_curr_repodata_hack=3=haa98f57_10

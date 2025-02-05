@@ -496,8 +496,6 @@ def eval_epoch(epoch_nr, folder_path, iou_thresh, metadata, nan_infs, filter_ooI
     out: dictionary with keys gt, orig, corr, orig_resil, corr_resil.
     Values to keys are lists of dictionaries with entries tp, fp, fn, prec, rec, etc.
     """
-
-    
     coco_gt, coco_orig, coco_corr, coco_orig_resil, coco_corr_resil = load_all_jsons(folder_path, epoch_nr, typ=typ)
     coco_labels = coco_gt["annotations"]
 
@@ -519,7 +517,10 @@ def eval_epoch(epoch_nr, folder_path, iou_thresh, metadata, nan_infs, filter_ooI
 
     # Info about DUE:
     nan_infs_epoch = nan_infs[0][epoch_nr]
-    nan_infs_epoch = np.array(nan_infs_epoch)[np.array(valid_inds)]
+    if len(nan_infs_epoch) >= len(valid_inds):
+        nan_infs_epoch = np.array(nan_infs_epoch)[np.array(valid_inds)]
+    else:
+        nan_infs_epoch = np.zeros(np.shape(valid_inds), dtype=np.int32)
 
     if nan_infs[1] is not None:
         nan_infs_ranger_epoch = nan_infs[1][epoch_nr]
@@ -547,7 +548,6 @@ def eval_epoch(epoch_nr, folder_path, iou_thresh, metadata, nan_infs, filter_ooI
         if coco_labels_grouped[i] == []:
             print("warning, no labels found for this image. Ground truth missing?")
 
-
         # Reduce predictions by those boxes outside of the image, if desired:
         if filter_ooI and bbox_mode is not None:
             coco_labels_grouped[i] = filter_out_of_image_boxes(coco_labels_grouped[i], bbox_mode)
@@ -556,8 +556,6 @@ def eval_epoch(epoch_nr, folder_path, iou_thresh, metadata, nan_infs, filter_ooI
             if coco_orig_resil_grouped is not None:
                 coco_orig_resil_grouped[i] = filter_out_of_image_boxes(coco_orig_resil_grouped[i], bbox_mode)
                 coco_corr_resil_grouped[i] = filter_out_of_image_boxes(coco_corr_resil_grouped[i], bbox_mode)
-
-
 
         # Match bounding boxes by IoU:
         result_dict = eval_image(coco_labels_grouped[i], coco_labels_grouped[i], iou_thresh, metadata, mode=eval_mode) #get one dict per image
@@ -569,7 +567,7 @@ def eval_epoch(epoch_nr, folder_path, iou_thresh, metadata, nan_infs, filter_ooI
         results["orig"].append(result_dict)
 
         result_dict = eval_image(coco_labels_grouped[i], coco_corr_grouped[i], iou_thresh, metadata, mode=eval_mode)
-        result_dict["nan_inf"] = int(nan_infs_epoch[i]) #add info about nan or inf at inference, if available. Go to int because of json dump.
+        result_dict["nan_inf"] = int(nan_infs_epoch[i])   #add info about nan or inf at inference, if available. Go to int because of json dump.
         results["corr"].append(result_dict)
 
         if coco_orig_resil_grouped is not None:
@@ -594,7 +592,6 @@ def eval_experiment(epochs, iou_thresh, folder_path, save_name, metadata, nan_in
     results_all_epochs = {'gt': [], 'orig': [], 'corr': [], 'orig_resil': [], 'corr_resil': [], 'unannotated_images': []} 
     for epoch_nr in range(epochs):
         print('epoch', epoch_nr, '...')
-        
         results_one_epoch, unannotated_images = eval_epoch(epoch_nr, folder_path, iou_thresh, metadata, nan_infs, filter_ooI, eval_mode=eval_mode, typ=typ, folder_num=folder_num) #corr nan_infs
 
         results_all_epochs["gt"].append(results_one_epoch["gt"])

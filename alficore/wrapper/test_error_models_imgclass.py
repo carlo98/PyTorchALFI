@@ -204,9 +204,9 @@ class TestErrorModels_ImgClass:
             from alficore.dataloader.imagenet_loader import Imagenet_dataloader
             self.dataloader = Imagenet_dataloader(dl_attr=self.dl_attr)
         elif self.dl_attr.dl_dataset_name == 'coco':
-            from alficore.dataloader.coco_loader import CoCo_dataloader
+            from alficore.dataloader.coco_loader import CoCo_obj_det_native_dataloader
             ##TODO: adapt dataloaders to receive dl_attr as function arguments
-            self.dataloader = CoCo_dataloader(dataset_type='val', batch_size=self.batch_size, device=self.device, sampleN=self.dl_sampleN, shuffle=self.dl_shuffle)
+            self.dataloader = CoCo_obj_det_native_dataloader(dl_attr=self.dl_attr)
         elif self.dl_attr.dl_dataset_name == 'mnist':
             from alficore.dataloader.mnist_loader import MNIST_dataloader
             self.dataloader = MNIST_dataloader(dl_attr=self.dl_attr)
@@ -433,7 +433,7 @@ class TestErrorModels_ImgClass:
         else:
             orig_model_entropy = None
 
-        if self.device.type == 'cuda':
+        if self.device == 'cuda':
             orig_perct = np.round(percentage[orig_index[0][:__TOP_RES]].cpu().detach().numpy(), decimals=2)
             orig_index = orig_index[0][:__TOP_RES].cpu().detach().numpy()
         else:

@@ -27,7 +27,6 @@ def read_faultbin_file(file):
     return pickle.load(_file)
 
 def add_data(toplot_dict, ax_leg, model_dict):
-
     path = model_dict["path"]
     label_name = model_dict["label_name"]
     typ = model_dict["typ"]
@@ -38,7 +37,6 @@ def add_data(toplot_dict, ax_leg, model_dict):
     flt_type = model_dict["flt_type"]
     suffix = model_dict["suffix"]
     bits = model_dict["bits"]
-    
     
     # Load from file saved in yolo_analysis3.py:
     try:
@@ -261,9 +259,11 @@ def get_m_err(list_to_plot):
         print('nans filter out for averaging in get_m_err:', a-len(list_to_plot))
     return np.mean(list_to_plot), np.std(list_to_plot)*1.96/np.sqrt(len(list_to_plot))
 
-def eval_n_w(tpl, plothow, ax_leg):
+def eval_n_w(tpl, plothow, ax_leg, n_w):
     
     res_n_w = []
+    if n_w == "weights":  # n_w added to make the code work for n_w different from None.
+        res_n_w.append({})
     for n in range(len(tpl)):
         toplot_dict = tpl[n] #0 is neurons, 1 is weights
 
@@ -402,11 +402,18 @@ def eval_n_w(tpl, plothow, ax_leg):
 
         res_n_w.append({'m_tps': m_tps_all, 'err_tps': err_tps_all, 'm_fps': m_fps_all, 'err_fps': err_fps_all, 'm_fns': m_fns_all, 'err_fns': err_fns_all, 'ax_leg': ax_leg[n]})
 
+    if n_w == "neurons":  # n_w added to make the code work for n_w different from None.
+        res_n_w.append({})
+
     return res_n_w, ax_leg, bpos_all
 
-def eval_n_w_resil(tpl, plothow, ax_leg):
+def eval_n_w_resil(tpl, plothow, ax_leg, n_w):
     
     res_n_w = []
+
+    if n_w == "weights":  # n_w added to make the code work for n_w different from None.
+        res_n_w.append({})
+
     for n in range(len(tpl)):
         toplot_dict = tpl[n] #0 is neurons, 1 is weights
 
@@ -542,11 +549,16 @@ def eval_n_w_resil(tpl, plothow, ax_leg):
 
         res_n_w.append({'m_tps': m_tps_all, 'err_tps': err_tps_all, 'm_fps': m_fps_all, 'err_fps': err_fps_all, 'm_fns': m_fns_all, 'err_fns': err_fns_all, 'ax_leg': ax_leg[n]})
 
+    if n_w == "neurons":  # n_w added to make the code work for n_w different from None.
+        res_n_w.append({})
+
     return res_n_w, ax_leg, bpos_all
 
-def eval_n_w_hist(tpl, plothow, ax_leg):
+def eval_n_w_hist(tpl, plothow, ax_leg, n_w):
     
     res_n_w = []
+    if n_w == "weights":  # n_w added to make the code work for n_w different from None.
+        res_n_w.append({})
     for n in range(len(tpl)):
         toplot_dict = tpl[n] #0 is neurons, 1 is weights
 
@@ -585,6 +597,9 @@ def eval_n_w_hist(tpl, plothow, ax_leg):
             m_fns_all.append(m_fns)
 
         res_n_w.append({'m_fps': m_fps_all, 'm_fns': m_fns_all, 'ax_leg': ax_leg[n]})
+
+    if n_w == "neurons":  # n_w added to make the code work for n_w different from None.
+        res_n_w.append({})
 
     return res_n_w, ax_leg, bit_positions
 
@@ -733,7 +748,7 @@ def plot_avg_tp_bpos(tpl, ax_leg, sv_name, plothow='fp', n_w='None', typ = "no_r
     n_w: switches between "neurons", "weights" or both "None"
     """
     function_eva_n_w = eval_n_w_resil if typ != "no_resil" else eval_n_w
-    res_n_w, ax_leg, bpos_all = function_eva_n_w(tpl, plothow, ax_leg)
+    res_n_w, ax_leg, bpos_all = function_eva_n_w(tpl, plothow, ax_leg, n_w)  # n_w added to make the code work for n_w different from None.
 
     if n_w == 'neurons':
         res_n_w = [res_n_w[0]]
@@ -862,7 +877,7 @@ def plot_hist_tp_bpos(tpl, ax_leg, sv_name, plothow='fp', n_w='None', typ = "no_
     n_w: switches between "neurons", "weights" or both "None"
     """
     function_eva_n_w = eval_n_w_resil_hist if typ != "no_resil" else eval_n_w_hist
-    res_n_w, ax_leg, bpos_all = function_eva_n_w(tpl, plothow, ax_leg)
+    res_n_w, ax_leg, bpos_all = function_eva_n_w(tpl, plothow, ax_leg, n_w=n_w)
 
     if n_w == 'neurons':
         res_n_w = [res_n_w[0]]
@@ -1081,7 +1096,7 @@ def obj_det_plot_metrics(exp_folder_paths):
             # SDC rates:
             sv_name = "plots/evaluation/corr_metrics/" + "sdc_all_" + flt_type + "_corr.png"
             yname = "Error rates (%)"
-            leg = ['$IVMOD_{corr\_sdc}$', '$IVMOD_{corr\_due}}$']
+            leg = ['IVMOD_{corr_sdc}', 'IVMOD_{corr_due}']
 
             mns_orig, errs_orig = toplot_dict['sdc']['corr_mns'], toplot_dict['sdc']['corr_errs']
             mns_corr, errs_corr = toplot_dict['due']['corr_mns'], toplot_dict['due']['corr_errs']

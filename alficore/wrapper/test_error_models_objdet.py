@@ -22,7 +22,6 @@ import json
 # from alficore import dataloader
 from alficore.dataloader.coco_loader import CoCo_obj_det_native_dataloader
 from alficore.dataloader.kitti_loader import Kitti_obj_det_native_dataloader
-from alficore.dataloader.lyft_json_loader import Lyft_obj_det_native_dataloader
 from alficore.ptfiwrap_utils.hook_functions_objDet import set_ranger_hooks_v3, set_ranger_hooks_v4, get_max_min_lists_in, set_simscore_hooks, set_nan_inf_hooks, run_nan_inf_hooks, run_simscore_hooks, set_quantiles_hooks
 from alficore.ptfiwrap_utils.utils import read_yaml
 from alficore.wrapper.ptfiwrap import ptfiwrap
@@ -208,8 +207,6 @@ class TestErrorModels_ObjDet:
             # self.dataloader = Kitti_obj_det_native_dataloader(dl_attr=self.dl_attr, dnn_model_name = self.model_name)
         elif self.dl_attr.dl_dataset_name=='kitti':
             self.dataloader = Kitti_obj_det_native_dataloader(dl_attr=self.dl_attr, dnn_model_name = self.model_name)
-        elif self.dl_attr.dl_dataset_name=='lyft':
-            self.dataloader = Lyft_obj_det_native_dataloader(dl_attr=self.dl_attr, dnn_model_name = self.model_name)
         else:
             self.dataloader = Kitti_obj_det_native_dataloader(dl_attr=self.dl_attr, dnn_model_name = self.model_name)
 

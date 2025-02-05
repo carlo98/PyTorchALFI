@@ -41,7 +41,7 @@ class CoCo_obj_det_native_dataloader(Abstract_Loader):
         **kwargs: Arbitrary keyword arguments.
         """
         
-        super().__init__(dl_attr,dnn_model_name)
+        super().__init__(dl_attr, dnn_model_name)
         # for own dataloader implementation overwrite init_dataloader() and call with self.init_dataloader()
         super().init_dataloader()
         

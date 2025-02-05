@@ -794,8 +794,14 @@ class Save_nan_inf:
             dims = len(output_nan_flags.shape)
             shape = output_nan_flags.shape
             if shape[0]>shape[1]:
-                output_inf_flags_reshape = output_inf_flags.permute(1,0,-1)
-                output_nan_flags_reshape = output_nan_flags.permute(1,0,-1)
+                if len(shape) > 3:
+                    output_inf_flags_reshape = output_inf_flags.permute(1, 0, 2, 3)
+                    output_nan_flags_reshape = output_nan_flags.permute(1, 0, 2, 3)
+                elif len(shape) == 2:
+                    output_inf_flags_reshape = output_inf_flags.permute(1, 0)
+                    output_nan_flags_reshape = output_nan_flags.permute(1, 0)
+                else:
+                    print("Error, TODO check")
                 monitors = [(torch.sum(output_nan_flags_reshape, dim=tuple(range(1,dims))) > 0).cpu().numpy(), (torch.sum(output_inf_flags_reshape, dim=tuple(range(1,dims))) > 0).cpu().numpy()]
             else:    
                 monitors = [(torch.sum(output_nan_flags, dim=tuple(range(1,dims))) > 0).cpu().numpy(), (torch.sum(output_inf_flags, dim=tuple(range(1,dims))) > 0).cpu().numpy()]
@@ -1037,7 +1043,7 @@ def run_nan_inf_hooks(save_nan_inf, hook_handles, layers_with_hooks):
     inf_dict = {'relu_in': [], 'relu_out': [], 'conv_in': [], 'conv_out': [], 'bn_in': [], 'bn_out': [], 'relu_in_glob': [], 'relu_out_glob': [], \
         'conv_in_glob': [], 'conv_out_glob': [], 'bn_in_glob': [], 'bn_out_glob': [], 'overall_in': [], 'overall_out': [], 'overall': [], 'flag': False, 'first_occurrence': []}
 
-    nan_inf_out = np.array(save_nan_inf.outputs) #format of nan_inf_in and _out is a list of length nr_network_layers and two columns with True/False for each layer depending on whether nan, infs were found or not.
+    nan_inf_out = np.array(save_nan_inf.outputs, dtype="object")  # format of nan_inf_in and _out is a list of length nr_network_layers and two columns with True/False for each layer depending on whether nan, infs were found or not.
     # Note: layers_with_hooks is list of names where hooks were set, save_nan_inf.hooked_layers are hooks that were actually called.
     hook_layer_names = save_nan_inf.hooked_layers
     # print('layers with hooks but no tensor output', save_nan_inf.unhooked_layers)
@@ -1047,38 +1053,35 @@ def run_nan_inf_hooks(save_nan_inf, hook_handles, layers_with_hooks):
         hook_handles[i].remove()
 
     # Process nan
-    nan_all_layers_out = np.array(nan_inf_out)[:, 0, :]
+    nan_all_layers_out = np.array([layer[0] for layer in save_nan_inf.outputs], dtype=object)
     nan_dict["overall_out"] = [list(np.where(n==True)[0]) for n in nan_all_layers_out.T]
     nan_dict['overall'] = nan_dict["overall_out"] #no in here
     #[np.unique(nan_dict['overall_out'][i]).tolist() for i in range(len(nan_dict['overall_out']))] 
-    nan_dict['flag'] = [x != [] for x in nan_dict['overall']]
+    nan_dict['flag'] = [bool(layer) for layer in nan_dict['overall']]
 
-    for i in range(len(nan_dict['overall'])):
-        first_nan_layer_index = nan_dict['overall'][i]
-        if first_nan_layer_index: #TODO:
-            # print(first_nan_layer_index[0])
-            if first_nan_layer_index[0] > len(hook_layer_names):
-                nan_dict['first_occurrence'].append([first_nan_layer_index[0], 'nan', 'layer'])
+    for i, layer in enumerate(nan_dict['overall']):
+        if layer:
+            first_nan_layer_index = layer[0]
+            if first_nan_layer_index >= len(hook_layer_names):
+                nan_dict['first_occurrence'].append([first_nan_layer_index, 'nan', 'layer'])
             else:
-                nan_dict['first_occurrence'].append([first_nan_layer_index[0], 'nan', hook_layer_names[first_nan_layer_index[0]]])
+                nan_dict['first_occurrence'].append([first_nan_layer_index, 'nan', hook_layer_names[first_nan_layer_index]])
         else:
             nan_dict['first_occurrence'].append([])
 
-    #Process inf 
-    inf_all_layers_out = np.array(nan_inf_out)[:, 1, :]
-    inf_dict["overall_out"] = [list(np.where(n==True)[0]) for n in inf_all_layers_out.T]
+    # Process Infs
+    inf_all_layers_out = np.array([layer[1] for layer in save_nan_inf.outputs], dtype=object)
+    inf_dict["overall_out"] = [list(np.where(np.array(layer) == True)[0]) for layer in inf_all_layers_out.T]
     inf_dict['overall'] = inf_dict["overall_out"]
-    #[np.unique(inf_dict['overall_out'][i]).tolist() for i in range(len(inf_dict['overall_out']))] 
-    inf_dict['flag'] = [x != [] for x in inf_dict['overall']]
+    inf_dict['flag'] = [bool(layer) for layer in inf_dict['overall']]
 
-    for i in range(len(inf_dict['overall'])):
-        first_inf_layer_index = inf_dict['overall'][i]
-        if first_inf_layer_index: #TODO:
-            # print(first_inf_layer_index[0], len(hook_layer_names)) #hook layer names
-            if first_inf_layer_index[0] > len(hook_layer_names):
-                inf_dict['first_occurrence'].append([first_inf_layer_index[0], 'inf', 'layer'])
+    for i, layer in enumerate(inf_dict['overall']):
+        if layer:
+            first_inf_layer_index = layer[0]
+            if first_inf_layer_index >= len(hook_layer_names):
+                inf_dict['first_occurrence'].append([first_inf_layer_index, 'inf', 'layer'])
             else:
-                inf_dict['first_occurrence'].append([first_inf_layer_index[0], 'inf', hook_layer_names[first_inf_layer_index[0]]])
+                inf_dict['first_occurrence'].append([first_inf_layer_index, 'inf', hook_layer_names[first_inf_layer_index]])
         else:
             inf_dict['first_occurrence'].append([])
 

@@ -5,8 +5,8 @@ from alficore.evaluation.sdc_plots.obj_det_plot_metrics_all_models import obj_de
 def obj_det_analysis(argv):
 
     exp_folder_paths = {"frcnn+CoCo":{
-                        "neurons":{"path" :"/../pytorchalfi/result_files/frcnn_torchvision_1_trials/neurons_injs/per_batch/objDet_20221101-035607_1_faults_[1]_bits/coco", "typ":"no_resil"},
-                        # "weights":{"path" :"result_files/yolov3_ultra_50_trials_nwstore/weights_injs/per_batch/objDet_20220213-202846_1_faults_[0_32]_bits/kitti/val/sdc_eval", "typ":"no_resil"}
+                        #"neurons":{"path" :"result_files/result_files_paper/frcnn_torchvision_3_trials/weights_injs/per_batch/objDet_20250204-164950_1_faults_[0,9]_bits/coco", "typ":"no_resil"},
+                        "weights":{"path" :"result_files/result_files_paper/frcnn_torchvision_3_trials/weights_injs/per_batch/objDet_20250204-164950_1_faults_[0,9]_bits/coco", "typ":"no_resil"}
                         },
             #             },
             #  "Yolo+Coco":{

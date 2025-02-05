@@ -351,7 +351,6 @@ def plot_bpos_tpfpfn(dct_sdc, flts_del, sv_name, injection_type, plot_ind = Fals
     plt.show()
 
 
-
 def plot_lay_bpos_tpfpfn(dct_sdc, flts_del, sv_name, injection_type):
 
     # # Filter only by those where tp, fp or fn changes ------------------------
@@ -680,7 +679,6 @@ def get_nan_inf_masks(corr_due, dct_all, nr_samples, nr_all, typ='no_resil'):
 
 def get_fault_path(folder_path, typ='no_resil'):
     filelist = list(Path(folder_path).glob('**/*fault_locs.bin'))
-
     if typ in ['no_resil', 'no_resil'] :
         for n in range(len(filelist)):
             if 'inj_ranger' not in str(filelist[n]) and 'updated' in str(filelist[n]):
@@ -722,10 +720,12 @@ def obj_det_analysis_func(folder_path, folder_num=0, typ='ranger'):
 def obj_det_analysis(exp_folder_paths, resil_methods, num_threads=1):
 
     try:
-        executor = concurrent.futures.ProcessPoolExecutor(num_threads)
-        futures = [executor.submit(obj_det_analysis_func, exp_folder_path, exp_folder_num, resil_methods[exp_folder_num])
-                for exp_folder_num, exp_folder_path in enumerate(exp_folder_paths)]
-        concurrent.futures.wait(futures)
+        #executor = concurrent.futures.ProcessPoolExecutor(num_threads)
+        #futures = [executor.submit(obj_det_analysis_func, exp_folder_path, exp_folder_num, resil_methods[exp_folder_num])
+        #        for exp_folder_num, exp_folder_path in enumerate(exp_folder_paths)]
+        #concurrent.futures.wait(futures)
+        for exp_folder_num, exp_folder_path in enumerate(exp_folder_paths):
+            obj_det_analysis_func(exp_folder_path, exp_folder_num, resil_methods[exp_folder_num])
     except Exception as e:
         print(e)
     except KeyboardInterrupt:

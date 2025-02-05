@@ -1,7 +1,6 @@
 # Copyright (c) Facebook, Inc. and its affiliates.
 import itertools
 from typing import Any, Dict, List, Tuple, Union
-from attr import field
 import torch
 
 

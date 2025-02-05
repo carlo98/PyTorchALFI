@@ -148,8 +148,7 @@ class Abstract_Loader(ABC):
     def datagen_itr(self):
         if self.data_incoming == True:
             # Use regular expressions to extract the version number
-            version_number = re.search(r'\d+\.\d+\.\d+', python_version_str).group()
-            version = version_number.group()
+            version = re.search(r'\d+\.\d+\.\d+', python_version_str).group()
             major, minor, patch = map(int, version.split('.'))
             if (major, minor, patch) > (3, 9, 18):
                 self.data = next(self.datagen_iter)
