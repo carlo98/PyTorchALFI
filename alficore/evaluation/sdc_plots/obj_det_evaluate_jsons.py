@@ -524,7 +524,10 @@ def eval_epoch(epoch_nr, folder_path, iou_thresh, metadata, nan_infs, filter_ooI
 
     if nan_infs[1] is not None:
         nan_infs_ranger_epoch = nan_infs[1][epoch_nr]
+    if len(nan_infs_ranger_epoch) >= len(valid_inds):
         nan_infs_ranger_epoch = np.array(nan_infs_ranger_epoch)[np.array(valid_inds)]
+    else:
+        nan_infs_ranger_epoch = np.zeros(np.shape(valid_inds), dtype=np.int32)
 
     # Group per image:
     coco_labels_grouped = group_by_image_id_indiv(coco_labels, list_nr_images)
@@ -587,8 +590,6 @@ def eval_experiment(epochs, iou_thresh, folder_path, save_name, metadata, nan_in
     output: dictionary (also saved) with keys gt, orig, corr, ... , faults.
     Value is a list of dict corresponding to the epochs.
     """
-
-
     results_all_epochs = {'gt': [], 'orig': [], 'corr': [], 'orig_resil': [], 'corr_resil': [], 'unannotated_images': []} 
     for epoch_nr in range(epochs):
         print('epoch', epoch_nr, '...')

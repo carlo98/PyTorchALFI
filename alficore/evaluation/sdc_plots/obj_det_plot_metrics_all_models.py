@@ -36,7 +36,6 @@ def add_data(toplot_dict, ax_leg, model_dict):
 
     flt_type = model_dict["flt_type"]
     suffix = model_dict["suffix"]
-    bits = model_dict["bits"]
     
     # Load from file saved in yolo_analysis3.py:
     try:
@@ -141,7 +140,6 @@ def add_data(toplot_dict, ax_leg, model_dict):
         toplot_dict["map"]["resil_corr_mns"].append(m)
         toplot_dict["map"]["resil_corr_errs"].append(err)
 
-
         # orig ap50
         m,err = get_m_err([resil_orig_ap50])
         toplot_dict["ap50"]["resil_orig_mns"].append(m)
@@ -150,7 +148,6 @@ def add_data(toplot_dict, ax_leg, model_dict):
         m,err = get_m_err(resil_corr_ap50)
         toplot_dict["ap50"]["resil_corr_mns"].append(m)
         toplot_dict["ap50"]["resil_corr_errs"].append(err)
-
 
         # tp and bpos
         tpfpfn_orig = results['metrics']["sdc"]["tpfpfn_resil_orig"]
@@ -603,9 +600,11 @@ def eval_n_w_hist(tpl, plothow, ax_leg, n_w):
 
     return res_n_w, ax_leg, bit_positions
 
-def eval_n_w_resil_hist(tpl, plothow, ax_leg):
+def eval_n_w_resil_hist(tpl, plothow, ax_leg, n_w):
 
     res_n_w = []
+    if n_w == "weights":  # n_w added to make the code work for n_w different from None.
+        res_n_w.append({})
     for n in range(len(tpl)):
         toplot_dict = tpl[n] #0 is neurons, 1 is weights
 
@@ -644,6 +643,9 @@ def eval_n_w_resil_hist(tpl, plothow, ax_leg):
             m_fns_all.append(m_fns)
 
         res_n_w.append({'m_fps': m_fps_all, 'm_fns': m_fns_all, 'ax_leg': ax_leg[n]})
+
+    if n_w == "neurons":  # n_w added to make the code work for n_w different from None.
+        res_n_w.append({})
 
     return res_n_w, ax_leg, bit_positions
 
@@ -1031,7 +1033,7 @@ toplot_dict_template = {'sdc': {'orig_mns': [], 'orig_errs': [], 'corr_mns': [],
 
 ####################################################################################
 flts = ['neurons', 'weights'] #['neurons', 'weights'] #'neurons', 'weights'
-suffix = "no_resil" 
+suffix = "ranger"  # or "no_resil", TODO: why not ranger?
 eval_mode = "iou+class_labels" # iou+class_labels , iou
 
 

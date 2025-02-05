@@ -702,14 +702,12 @@ def obj_det_analysis_func(folder_path, folder_num=0, typ='ranger'):
     model_name = [split for split in folder_path.split('/') if '_trials' in split][0]
     model_name = "_".join(model_name.split('_')[:-2])
     dataset_name = os.path.split(folder_path)[-1]
-    bits = 32
     eval_mode = "iou+class_labels" # "iou+class_labels", "iou"
 
     # Evaluation --------------
     save_name = os.path.join(folder_path, 'sdc_eval', model_name + "_" + dataset_name + "_" + "results_1_" + flt_type + "_backup" + suffix + ".json")
     os.makedirs(os.path.dirname(save_name), exist_ok=True)
     evaluation(folder_path, save_name, folder_num=folder_num, eval_mode=eval_mode, typ=typ)
-
 
     save_as_name = os.path.join(folder_path, 'sdc_eval', model_name + "_" + dataset_name + "_" + "results_1_" + flt_type + "_images" + suffix + ".json")
     os.makedirs(os.path.dirname(save_as_name), exist_ok=True)

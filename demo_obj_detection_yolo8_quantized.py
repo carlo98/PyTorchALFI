@@ -21,7 +21,7 @@ from alficore.ptfiwrap_utils.helper_functions import TEM_Dataloader_attr
 
 
 cuda_device = 0
-model_name = 'frcnn_torchvision'
+model_name = 'yolo_torchvision'
 
 class  build_objdet_native_model(build_native_model):
     """
@@ -283,12 +283,6 @@ def main(argv):
         "cuda:{}".format(opt.device) if torch.cuda.is_available() else "cpu")
 
     # Model   ----------------------------------------------------------
-    frcnn_model = faster_rcnn.fasterrcnn_resnet50_fpn(weights=faster_rcnn.FasterRCNN_ResNet50_FPN_Weights.DEFAULT)
-    frcnn_model = frcnn_model.to(device)
-    frcnn_model.eval()
-    # model = build_objdet_native_model(model=frcnn_model)
-    model = frcnn_model
-
     model = YOLO('../yolov8n.pt').model
     model.load_state_dict(torch.load('../yolov8_quantized.pth')) #load the pretrained weights
     model = model.to(device)
@@ -309,10 +303,11 @@ def main(argv):
     fault_files = opt.fault_files
     wrapped_model = build_objdet_native_model(model, device)
 
-    frcnn_Errormodel = TestErrorModels_ObjDet(model=wrapped_model, resil_model=None, resil_name=None, model_name=model_name, config_location=opt.config_file, \
+    # resil_name should be None to use "no_resil" mode. TODO: Look into difference
+    yolo_Errormodel = TestErrorModels_ObjDet(model=wrapped_model, resil_model=None, resil_name="ranger", model_name=model_name, config_location=opt.config_file, \
                     ranger_bounds=None, device=device,  inf_nan_monitoring=True, disable_FI=False, dl_attr=dl_attr, num_faults=0, fault_file=fault_files, \
                         resume_dir=None, copy_yml_scenario = False)
-    frcnn_Errormodel.test_rand_ObjDet_SBFs_inj()
+    yolo_Errormodel.test_rand_ObjDet_SBFs_inj()
 
 def parse_opt():
     parser = argparse.ArgumentParser()

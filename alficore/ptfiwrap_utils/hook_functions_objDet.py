@@ -793,7 +793,6 @@ class Save_nan_inf:
             output_inf_flags = module_out.isinf()
             dims = len(output_nan_flags.shape)
             shape = output_nan_flags.shape
-            print(shape)
             if shape[0]>shape[1]:
                 if len(shape) == 4:
                     output_inf_flags_reshape = output_inf_flags.permute(1, 0, 2, 3)

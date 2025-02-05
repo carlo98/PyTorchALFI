@@ -9,9 +9,9 @@ def obj_det_analysis(argv):
 
     # Pay attention not to add an unnecessary / at the end
     exp_folder_paths = [
-                    "result_files/frcnn_torchvision_1_trials/neurons_injs/per_batch/objDet_20250205-152419_1_faults_[0,7]_bits/coco"
+                    "result_files/yolo_torchvision_1_trials/neurons_injs/per_batch/objDet_20250205-154712_1_faults_[0,7]_bits/coco"
                     ]
-    resil_methods = ["no_resil"]*len(exp_folder_paths)
+    resil_methods = ["ranger"]*len(exp_folder_paths)  # or "no_resil"
     objdet_analysis(exp_folder_paths=exp_folder_paths, resil_methods=resil_methods, num_threads=1)
 
 if __name__ == "__main__":
